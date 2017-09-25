@@ -1,0 +1,30 @@
+{
+  "ver": "1.0.0",
+  "uuid": "8f6053bd-01ae-4f6b-94d5-4f441c4ed0f0",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "subMetas": {
+    "You-Died": {
+      "ver": "1.0.3",
+      "uuid": "e763f993-364a-416a-bf50-e26fd3e4ccd8",
+      "rawTextureUuid": "8f6053bd-01ae-4f6b-94d5-4f441c4ed0f0",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 575,
+      "height": 350,
+      "rawWidth": 575,
+      "rawHeight": 350,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}
