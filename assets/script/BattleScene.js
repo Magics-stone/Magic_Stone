@@ -13,6 +13,10 @@ cc.Class({
         //    readonly: false,    // optional, default is false
         // },
         // ...
+        groupAtlas:{
+            default: null,
+            type: cc.SpriteAtlas
+        },
     },
 
     // use this for initialization
@@ -23,6 +27,7 @@ cc.Class({
     start: function(){
         this.myHp = [gameData["mage"]["hp"],gameData["archer"]["hp"],gameData["priest"]["hp"],gameData["warrior"]["hp"]]; //Array store data from gamedata
         this.enemyHp = gameData["enemy"]["hp"];
+        this.enemyMaxHp = this.enemyHp;
         this.pokersMap = {
             attack:0,
             defend:1,
@@ -40,13 +45,31 @@ cc.Class({
         this.index = 0;
         this.canTouch = true;
         this.skill = ["none","none","none","none"];
+        this.initMyGroup();
         for (var i = 0; i < 4; i++) {
             this.pokers.push(cc.find("Canvas/poker"+(i+1)));
-            this.roles.push(cc.find("Canvas/MyCharacter"+(i+1)));
+            var node = cc.find("Canvas/MyCharacter"+(i+1));
+            node.name = this.jobMap[i];
+            node.getComponent(cc.Sprite).spriteFrame = this.groupAtlas.getSpriteFrame(this.jobMap[i]+"_1");
+            this.roles.push(node);
             this.roles[i].getChildByName("hp").getComponent(cc.Label).string = this.myHp[i];
+            this.roles[i].getChildByName("light").getComponent(cc.Sprite).spriteFrame = this.groupAtlas.getSpriteFrame(this.jobMap[i]+"_2");
         } //initialize poker
         cc.find("Canvas/EnemyCharacter").getChildByName("hp").getComponent(cc.Label).string = this.enemyHp; // show enemyhp
         this.roles[this.index].getChildByName("light").active = true;
+        this.updatePokerStatus(this.roles[this.index].name);
+        this.upgrade = false;
+    },
+
+    // Init my own group according to EditInterface.
+    initMyGroup: function()
+    {
+        console.log(gameData.myGroup);
+        for (var i = 0; i < gameData.myGroup.length; i++) {
+            this.jobMap[i] = gameData.myGroup[i];
+            this.myHp[i] = gameData[gameData.myGroup[i]]["hp"];
+        }
+
     },
 
     skillEffect: function(target,data){
@@ -62,11 +85,7 @@ cc.Class({
     }, // defined which skill was active
 
     pokerClickCallBack: function(target,data){
-        console.log("data:"+data);
         if (this.canTouch===false) {
-            return;
-        }
-        if (this.checkSkill(data)===false) {
             return;
         }
         this.skill[this.index] = data;
@@ -82,6 +101,7 @@ cc.Class({
                 this.index = this.getNextIndex();
                 this.canTouch = true;
                 this.roles[this.index].getChildByName("light").active = true;
+                this.updatePokerStatus(this.roles[this.index].name);
             }.bind(this))));
     }, // when the poker was clicked, move to the middle of screen then come back
 
@@ -126,8 +146,49 @@ cc.Class({
         }
     }, // check which skill can be used
 
+
+    // udpate poker status by job
+    updatePokerStatus: function(job)
+    {
+        console.log("updatePokerStatus:"+job);
+        switch(job)
+        {
+            case "mage":
+                this.pokers[0].getComponent(cc.Button).interactable = true;
+                this.pokers[1].getComponent(cc.Button).interactable = true;
+                this.pokers[2].getComponent(cc.Button).interactable = false;
+                this.pokers[3].getComponent(cc.Button).interactable = false;
+                break;
+            case "archer":
+                this.pokers[0].getComponent(cc.Button).interactable = true;
+                this.pokers[1].getComponent(cc.Button).interactable = false;
+                this.pokers[2].getComponent(cc.Button).interactable = true;
+                this.pokers[3].getComponent(cc.Button).interactable = false;
+                break;
+            case "priest":
+                this.pokers[0].getComponent(cc.Button).interactable = false;
+                this.pokers[1].getComponent(cc.Button).interactable = false;
+                this.pokers[2].getComponent(cc.Button).interactable = true;
+                this.pokers[3].getComponent(cc.Button).interactable = true;
+                break;
+            case "warrior":
+                this.pokers[0].getComponent(cc.Button).interactable = true;
+                this.pokers[1].getComponent(cc.Button).interactable = true;
+                this.pokers[2].getComponent(cc.Button).interactable = false;
+                this.pokers[3].getComponent(cc.Button).interactable = false;
+                break;
+        }
+
+
+    },
+
     attackSkill: function(job){
         this.enemyHp -= gameData[job]["atk"];
+        //If the enemy's blood is less than 50%,upgrade ATK to 150% of the origin.
+        if (this.enemyMaxHp/2>=this.enemyHp && this.upgrade === false) {
+            gameData["enemy"]["atk"]+=0.5*gameData["enemy"]["atk"];
+            this.upgrade = true;
+        }
         cc.find("Canvas/EnemyCharacter").getChildByName("hp").getComponent(cc.Label).string = this.enemyHp;
         this.checkGameOver();
     },

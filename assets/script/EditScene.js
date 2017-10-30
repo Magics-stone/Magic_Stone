@@ -1,3 +1,4 @@
+var gameData = require("GameData");
 cc.Class({
     extends: cc.Component,
 
@@ -27,6 +28,7 @@ cc.Class({
     	this.myrole = 0;
     	this.l_index = -1;
     	this.mySelect = [];
+        gameData.myGroup = [];
     },
 
     confirmCallBack: function(){
@@ -37,25 +39,30 @@ cc.Class({
     		return;
     	}
     	this.myrole++;
-    	console.log("myrole:"+this.myrole);
     	cc.find("Canvas/"+"lbutton"+this.l_index).scale = 0.125; // minimize the size
     	var fileName;
     	switch(this.l_index)
     	{	
     		case 0:
     		fileName = "fashi"; //mage
+            gameData.myGroup.push("mage");
     		break;
     		case 1:
     		fileName = "gongjianshou"; //Archer
+            gameData.myGroup.push("archer");
     		break;
     		case 2:
     		fileName = "mushi"; //Priest
+            gameData.myGroup.push("priest");
     		break;
     		case 3:
     		fileName = "zhanshi"; //warrior
+            gameData.myGroup.push("warrior");
     		break;
     	}
+        console.log(gameData.myGroup);
     	var node = new cc.Node();
+        node.name = fileName;
     	var sprite = node.addComponent(cc.Sprite);
     	sprite.spriteFrame  = this.roleAtlas.getSpriteFrame(fileName); //create a sprite and add sprite image
     	sprite.sizeMode = cc.Sprite.SizeMode.CUSTOM;
@@ -79,14 +86,42 @@ cc.Class({
     	if (this.myrole===0) {
     		return;
     	}
+        var delFunc = function(str)
+        {
+            for (var i = 0; i < gameData.myGroup.length; i++) {
+                if (gameData.myGroup[i]===str) {
+                    gameData.myGroup.splice(i,1);
+                    console.log("delete:"+str);
+                    break;
+                }
+            }
+        }
     	for (var i = 0; i < this.mySelect.length; i++) {
     		if (this.mySelect[i].scale==0.15) {
+                switch(this.mySelect[i].name)
+            {
+                case "fashi":
+                delFunc("mage");
+                break;            
+                case "gongjianshou":
+                delFunc("archer");
+                break;
+                case "mushi":
+                delFunc("priest");
+                break;
+                case "zhanshi":
+                delFunc("warrior");
+                break;
+                default:
+                console.log("error:"+this.mySelect[i].name);
+            }
     			this.mySelect[i].removeFromParent();
     			this.mySelect.splice(i,1);
     			this.myrole--;
     			break;
     		}
     	}
+        console.log(gameData.myGroup);
     	for (var i = 0; i < this.mySelect.length; i++) {
     		this.mySelect[i].position = cc.v2(314,178-115*(i));
     	}
@@ -106,6 +141,23 @@ cc.Class({
     	}
     	data.scale = 0.15;
     },// when click the character on right size , maximize it
+
+    // change to BattleInterface
+    goBattleCallBack: function()
+    {
+        var node = cc.find("Canvas/Tips");
+        if (node.active) {
+            return;
+        }
+        if (this.myrole<4) {
+            node.active = true;
+            this.node.runAction(cc.sequence(cc.delayTime(1.5),cc.callFunc(function(){
+               cc.find("Canvas/Tips").active = false; 
+            },this)));
+            return;
+        }
+        cc.director.loadScene('BattleInterface');
+    }
 
     // called every frame, uncomment this function to activate update callback
     // update: function (dt) {

@@ -19,5 +19,6 @@ var GameData = {
         hp:400,
         atk:45,
     },
+    myGroup:[]
 }
 module.exports = GameData;
